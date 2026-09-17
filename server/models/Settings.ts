@@ -16,6 +16,11 @@ export interface ISettings extends Document {
   logoUrl?: string;
   enableTax?: boolean;
   defaultTaxRate?: string;
+  bankName?: string;
+  bankAccountNo?: string;
+  bankIfsc?: string;
+  bankBranch?: string;
+  upiId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +42,11 @@ const SettingsSchema: Schema = new Schema(
     logoUrl: { type: String, default: '' },
     enableTax: { type: Boolean, default: false },
     defaultTaxRate: { type: String, default: '18' },
+    bankName: { type: String, default: '', trim: true },
+    bankAccountNo: { type: String, default: '', trim: true },
+    bankIfsc: { type: String, default: '', trim: true },
+    bankBranch: { type: String, default: '', trim: true },
+    upiId: { type: String, default: '', trim: true },
   },
   { timestamps: true }
 );

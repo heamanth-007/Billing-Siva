@@ -20,6 +20,7 @@ import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
 import CircularProgress from '@mui/material/CircularProgress';
 import { SettingsApi } from '../services/api';
 
@@ -39,6 +40,11 @@ export interface CompanySettings {
   logoUrl?: string;
   enableTax?: boolean;
   defaultTaxRate?: string;
+  bankName?: string;
+  bankAccountNo?: string;
+  bankIfsc?: string;
+  bankBranch?: string;
+  upiId?: string;
 }
 
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
@@ -57,6 +63,11 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   logoUrl: '',
   enableTax: false,
   defaultTaxRate: '18',
+  bankName: '',
+  bankAccountNo: '',
+  bankIfsc: '',
+  bankBranch: '',
+  upiId: '',
 };
 
 export const removeWhiteBackgroundFromDataUrl = (
@@ -181,6 +192,11 @@ export const SettingsPage: React.FC = () => {
             logoUrl: data.logoUrl ?? '',
             enableTax: Boolean(data.enableTax),
             defaultTaxRate: data.defaultTaxRate || '18',
+            bankName: data.bankName ?? DEFAULT_COMPANY_SETTINGS.bankName,
+            bankAccountNo: data.bankAccountNo ?? DEFAULT_COMPANY_SETTINGS.bankAccountNo,
+            bankIfsc: data.bankIfsc ?? DEFAULT_COMPANY_SETTINGS.bankIfsc,
+            bankBranch: data.bankBranch ?? DEFAULT_COMPANY_SETTINGS.bankBranch,
+            upiId: data.upiId ?? DEFAULT_COMPANY_SETTINGS.upiId,
           };
           setSettings(remoteSettings);
           localStorage.setItem('dheeksha_app_settings', JSON.stringify(remoteSettings));
@@ -305,6 +321,11 @@ export const SettingsPage: React.FC = () => {
           logoUrl: data.logoUrl ?? settings.logoUrl,
           enableTax: Boolean(data.enableTax ?? settings.enableTax),
           defaultTaxRate: data.defaultTaxRate ?? settings.defaultTaxRate ?? '18',
+          bankName: data.bankName ?? settings.bankName,
+          bankAccountNo: data.bankAccountNo ?? settings.bankAccountNo,
+          bankIfsc: data.bankIfsc ?? settings.bankIfsc,
+          bankBranch: data.bankBranch ?? settings.bankBranch,
+          upiId: data.upiId ?? settings.upiId,
         };
         setSettings(syncedSettings);
         localStorage.setItem('dheeksha_app_settings', JSON.stringify(syncedSettings));
@@ -1021,6 +1042,85 @@ export const SettingsPage: React.FC = () => {
                     value={settings.pan}
                     onChange={(e) => handleChange('pan', e.target.value.toUpperCase())}
                     placeholder="e.g. AAAAA0000A"
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Section 5: Bank & Payment Details */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: '12px',
+                border: '1px solid #FDE68A',
+                backgroundColor: '#FFFFFF',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <AccountBalanceRoundedIcon sx={{ color: '#059669', fontSize: 20 }} />
+                <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#047857' }}>
+                  Bank & Payment Details (Printed on Invoices)
+                </Typography>
+              </Box>
+
+              <Typography sx={{ fontSize: '12px', color: '#64748B', mb: 2 }}>
+                Optionally add your company bank account or UPI info to be printed on bill invoices for customer payments.
+              </Typography>
+
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Bank Name"
+                    value={settings.bankName || ''}
+                    onChange={(e) => handleChange('bankName', e.target.value)}
+                    placeholder="e.g. State Bank of India / HDFC Bank"
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Account Number"
+                    value={settings.bankAccountNo || ''}
+                    onChange={(e) => handleChange('bankAccountNo', e.target.value)}
+                    placeholder="e.g. 123456789012"
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="IFSC Code"
+                    value={settings.bankIfsc || ''}
+                    onChange={(e) => handleChange('bankIfsc', e.target.value.toUpperCase())}
+                    placeholder="e.g. SBIN0001234"
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Branch Name"
+                    value={settings.bankBranch || ''}
+                    onChange={(e) => handleChange('bankBranch', e.target.value)}
+                    placeholder="e.g. Sivakasi Main Branch"
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="UPI ID / GPay / PhonePe"
+                    value={settings.upiId || ''}
+                    onChange={(e) => handleChange('upiId', e.target.value)}
+                    placeholder="e.g. company@upi or 9876543210@paytm"
                   />
                 </Grid>
               </Grid>

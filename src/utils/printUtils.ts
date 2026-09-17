@@ -129,24 +129,50 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       ? bill.companyName
       : storeSettings.companyName || 'General';
 
+  // Build full company address line
+  const addressParts = [
+    storeSettings.address,
+    storeSettings.city,
+    storeSettings.state,
+    storeSettings.pincode ? `PIN: ${storeSettings.pincode}` : '',
+  ].filter(Boolean);
+  const fullAddressLine = addressParts.length > 0 ? addressParts.join(', ') : 'Sivakasi, Tamil Nadu';
+
+  // Build contact lines
+  const contactItems = [
+    storeSettings.phone ? `Mobile: ${storeSettings.phone}` : '',
+    storeSettings.whatsapp ? `WhatsApp: ${storeSettings.whatsapp}` : '',
+    storeSettings.email ? `Email: ${storeSettings.email}` : '',
+  ].filter(Boolean);
+  const contactLine = contactItems.join(' | ');
+
+  // Build tax/reg line
   const isTaxActive = Boolean(storeSettings.enableTax) || (parseFloat(String(bill.tax || '0').replace(/[^0-9.]/g, '')) > 0);
+  const taxItems = [
+    (isTaxActive && storeSettings.gstin) ? `GSTIN: ${storeSettings.gstin}` : '',
+    storeSettings.pan ? `PAN: ${storeSettings.pan}` : '',
+    storeSettings.ownerName ? `Prop: ${storeSettings.ownerName}` : '',
+  ].filter(Boolean);
+  const taxLine = taxItems.join(' | ');
+
+  // Check for bank details
+  const hasBankDetails = Boolean(
+    storeSettings.bankName || storeSettings.bankAccountNo || storeSettings.bankIfsc || storeSettings.upiId
+  );
+
   const receiptSrc = bill.pdfData || bill.pdfUrl || '';
-  const cityLine = `${storeSettings.city || 'Sivakasi'}${storeSettings.state ? `, ${storeSettings.state}` : ''}`;
-  const gstinLine = (isTaxActive && storeSettings.gstin) ? `GSTIN: ${storeSettings.gstin}` : '';
-  const phoneLine = storeSettings.phone ? `Mobile: ${storeSettings.phone}` : '';
-  const metaContact = [gstinLine, phoneLine].filter(Boolean).join(' | ');
 
   const productRowsHtml = (bill.products || []).map((item, idx) => {
     const numAmt = parseFloat(String(item.amount).replace(/,/g, '')) || 0;
     const numRate = parseFloat(String(item.rate).replace(/,/g, '')) || 0;
     return `
       <tr>
-        <td style="border: 1px solid #000000; padding: 6px 8px; text-align: center;">${idx + 1}</td>
-        <td style="border: 1px solid #000000; padding: 6px 8px; text-align: left; font-weight: 600;">${item.particular || '-'}</td>
-        <td style="border: 1px solid #000000; padding: 6px 8px; text-align: center;">${item.quantity || '-'}</td>
-        <td style="border: 1px solid #000000; padding: 6px 8px; text-align: right;">${numRate > 0 ? numRate.toFixed(2) : (item.rate || '-')}</td>
-        <td style="border: 1px solid #000000; padding: 6px 8px; text-align: center;">${item.pktUnit && item.pktUnit !== '-' ? item.pktUnit : ''}</td>
-        <td style="border: 1px solid #000000; padding: 6px 8px; text-align: right; font-weight: 700;">${numAmt.toFixed(2)}</td>
+        <td style="border: 1px solid #000000; padding: 4px 6px; text-align: center;">${idx + 1}</td>
+        <td style="border: 1px solid #000000; padding: 4px 8px; text-align: left; font-weight: 600;">${item.particular || '-'}</td>
+        <td style="border: 1px solid #000000; padding: 4px 6px; text-align: center;">${item.quantity || '-'}</td>
+        <td style="border: 1px solid #000000; padding: 4px 6px; text-align: right;">${numRate > 0 ? numRate.toFixed(2) : (item.rate || '-')}</td>
+        <td style="border: 1px solid #000000; padding: 4px 6px; text-align: center;">${item.pktUnit && item.pktUnit !== '-' ? item.pktUnit : ''}</td>
+        <td style="border: 1px solid #000000; padding: 4px 8px; text-align: right; font-weight: 700;">${numAmt.toFixed(2)}</td>
       </tr>
     `;
   }).join('');
@@ -176,43 +202,62 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     }
     .bill-box-container {
       width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
       border: 1.5px solid #000000;
       background: #ffffff;
+      box-sizing: border-box;
     }
     .top-header {
       text-align: center;
-      padding: 12px 16px 10px 16px;
+      padding: 10px 16px 8px 16px;
       border-bottom: 1.5px solid #000000;
     }
     .comp-name {
-      font-size: 26px;
-      font-weight: 800;
+      font-size: 24px;
+      font-weight: 900;
       color: #000000;
       margin-bottom: 2px;
       letter-spacing: -0.01em;
       text-transform: uppercase;
+      line-height: 1.15;
     }
-    .comp-city {
-      font-size: 13px;
-      font-weight: 600;
-      color: #1e293b;
-    }
-    .comp-meta {
+    .comp-tagline {
       font-size: 11.5px;
       font-weight: 600;
-      color: #475569;
+      color: #334155;
+      font-style: italic;
+      margin-bottom: 2px;
+    }
+    .comp-address {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #1e293b;
+      line-height: 1.3;
+    }
+    .comp-contact {
+      font-size: 11px;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 2px;
+    }
+    .comp-tax {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0f172a;
       margin-top: 2px;
     }
     .meta-table {
       width: 100%;
       border-collapse: collapse;
       border-bottom: 1.5px solid #000000;
-      font-size: 12.5px;
+      font-size: 12px;
+      table-layout: fixed;
     }
     .meta-table td {
       border: 1px solid #000000;
-      padding: 5px 10px;
-      vertical-align: middle;
+      padding: 5px 8px;
+      vertical-align: top;
     }
     .meta-label {
       color: #475569;
@@ -227,18 +272,19 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       width: 100%;
       border-collapse: collapse;
       border-bottom: 1.5px solid #000000;
-      font-size: 12px;
+      font-size: 11.5px;
+      table-layout: fixed;
     }
     .prod-table th {
       border: 1px solid #000000;
-      padding: 6px 8px;
+      padding: 5px 6px;
       font-weight: 700;
       background-color: #f8fafc;
       color: #000000;
     }
     .prod-table td {
       border: 1px solid #000000;
-      padding: 6px 8px;
+      padding: 4px 6px;
     }
     .bottom-section {
       width: 100%;
@@ -247,31 +293,44 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       align-items: stretch;
       page-break-inside: avoid;
     }
-    .left-receipt-area {
+    .left-side-area {
       flex: 1 1 50%;
       border-right: 1.5px solid #000000;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      min-height: 140px;
-    }
-    .left-sign-area {
-      flex: 1 1 50%;
-      border-right: 1.5px solid #000000;
-      padding: 12px 16px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: space-between;
       box-sizing: border-box;
-      min-height: 140px;
+      min-height: 120px;
     }
     .receipt-img {
       max-width: 100%;
-      max-height: 180px;
+      max-height: 140px;
       object-fit: contain;
       display: block;
+    }
+    .bank-box {
+      font-size: 10.5px;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    .bank-header {
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #0f172a;
+      margin-bottom: 2px;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 1px;
+    }
+    .sig-line-box {
+      font-size: 11px;
+      font-weight: 700;
+      color: #000000;
+      border-top: 1px dashed #000000;
+      display: inline-block;
+      padding-top: 3px;
+      width: 160px;
+      margin-top: 8px;
     }
     .summary-area {
       flex: 1 1 50%;
@@ -281,11 +340,11 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     .summary-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12.5px;
+      font-size: 11.5px;
     }
     .summary-table td {
       border: 1px solid #000000;
-      padding: 5px 10px;
+      padding: 4px 8px;
     }
     .summary-label-cell {
       font-weight: 500;
@@ -297,9 +356,9 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       color: #000000;
     }
     .summary-total-row td {
-      font-weight: 800;
-      font-size: 13.5px;
-      padding: 7px 10px;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 6px 8px;
       background-color: #f8fafc;
       border-top: 1.5px solid #000000;
     }
@@ -311,35 +370,27 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     <div class="top-header">
       ${
         storeSettings.logoUrl
-          ? `<div style="margin-bottom:4px;"><img src="${storeSettings.logoUrl}" alt="Logo" style="max-height:48px; max-width:150px; object-fit:contain;" /></div>`
+          ? `<div style="margin-bottom:4px;"><img src="${storeSettings.logoUrl}" alt="Logo" style="max-height:44px; max-width:140px; object-fit:contain;" /></div>`
           : ''
       }
       <div class="comp-name">${displayCompanyName}</div>
-      <div class="comp-city">${cityLine}</div>
-      ${metaContact ? `<div class="comp-meta">${metaContact}</div>` : ''}
+      ${storeSettings.tagline ? `<div class="comp-tagline">${storeSettings.tagline}</div>` : ''}
+      <div class="comp-address">${fullAddressLine}</div>
+      ${contactLine ? `<div class="comp-contact">${contactLine}</div>` : ''}
+      ${taxLine ? `<div class="comp-tax">${taxLine}</div>` : ''}
     </div>
 
     <!-- Metadata Grid Table with Boxed Lines -->
     <table class="meta-table">
       <tr>
         <td style="width: 50%;">
-          <span class="meta-label">Bill No:</span>
-          <span class="meta-val">${bill.billNo || '-'}</span>
-        </td>
-        <td style="width: 50%;">
-          <span class="meta-label">Date:</span>
-          <span class="meta-val">${bill.date || '-'}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="vertical-align: top;">
           <div>
             <span class="meta-label">Customer Name:</span>
-            <span class="meta-val">${bill.customerName || '-'}</span>
+            <span class="meta-val" style="font-size: 13px;">${bill.customerName || '-'}</span>
           </div>
           ${
             bill.customerPhone && bill.customerPhone.trim() !== '' && bill.customerPhone !== '-'
-              ? `<div style="font-size:11.5px; margin-top:2px; color:#1e293b;"><span style="color:#64748b;">Mobile:</span> <strong>${bill.customerPhone}</strong></div>`
+              ? `<div style="font-size:11px; margin-top:2px; color:#1e293b;"><span style="color:#64748b;">Mobile:</span> <strong>${bill.customerPhone}</strong></div>`
               : ''
           }
           ${
@@ -347,20 +398,37 @@ export const generateBillHtml = (bill: BillPrintData): string => {
               ? `<div style="font-size:11px; margin-top:2px; color:#334155;"><span style="color:#64748b;">Address:</span> <span>${bill.customerAddress}</span></div>`
               : ''
           }
+          ${
+            bill.customerGst && bill.customerGst.trim() !== '' && bill.customerGst !== '-' && bill.customerGst !== 'N/A'
+              ? `<div style="font-size:11px; margin-top:2px; color:#334155;"><span style="color:#64748b;">GSTIN:</span> <strong>${bill.customerGst}</strong></div>`
+              : ''
+          }
         </td>
-        <td style="vertical-align: top;">
-          <span class="meta-label">Company Name:</span>
-          <span class="meta-val">${displayCompanyName}</span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <span class="meta-label">Transport:</span>
-          <span class="meta-val">${transportDisplayName}</span>
-        </td>
-        <td>
-          <span class="meta-label">Total No. of Cases:</span>
-          <span class="meta-val">${computedCases}</span>
+        <td style="width: 50%;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+            <div>
+              <span class="meta-label">Bill No:</span>
+              <span class="meta-val" style="font-size: 13px;">#${bill.billNo || '-'}</span>
+            </div>
+            <div>
+              <span class="meta-label">Date:</span>
+              <span class="meta-val">${bill.date || '-'}</span>
+            </div>
+          </div>
+          <div style="margin-top: 2px;">
+            <span class="meta-label">Billed By:</span>
+            <span class="meta-val">${displayCompanyName}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 3px;">
+            <div>
+              <span class="meta-label">Transport:</span>
+              <span class="meta-val">${transportDisplayName}</span>
+            </div>
+            <div>
+              <span class="meta-label">Total Cases:</span>
+              <span class="meta-val">${computedCases}</span>
+            </div>
+          </div>
         </td>
       </tr>
     </table>
@@ -369,37 +437,48 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     <table class="prod-table">
       <thead>
         <tr>
-          <th style="width: 45px; text-align: center;">Si.No</th>
-          <th style="text-align: left;">Particular</th>
-          <th style="width: 75px; text-align: center;">Quantity</th>
-          <th style="width: 85px; text-align: right;">Rate (₹)</th>
-          <th style="width: 85px; text-align: center;">Pkt / Unit</th>
-          <th style="width: 105px; text-align: right;">Amount (₹)</th>
+          <th style="width: 38px; text-align: center;">Si.No</th>
+          <th style="text-align: left; padding: 5px 8px;">Particular / Product Description</th>
+          <th style="width: 65px; text-align: center;">Qty</th>
+          <th style="width: 75px; text-align: right;">Rate (₹)</th>
+          <th style="width: 75px; text-align: center;">Unit</th>
+          <th style="width: 95px; text-align: right; padding: 5px 8px;">Amount (₹)</th>
         </tr>
       </thead>
       <tbody>
-        ${productRowsHtml || '<tr><td colspan="6" style="text-align:center; padding:14px; border:1px solid #000;">No product items</td></tr>'}
+        ${productRowsHtml || '<tr><td colspan="6" style="text-align:center; padding:12px; border:1px solid #000;">No product items in bill</td></tr>'}
       </tbody>
     </table>
 
     <!-- Bottom Section: Receipt or Signatory Box on Left & Summary Box on Right -->
     <div class="bottom-section">
-      ${
-        receiptSrc
-          ? `
-          <div class="left-receipt-area">
-            <img src="${receiptSrc}" class="receipt-img" alt="Transport Receipt" />
-          </div>
-          `
-          : `
-          <div class="left-sign-area">
-            <div style="font-size: 11px; color: #64748B; margin-bottom: 24px;">Thank you for your business!</div>
-            <div style="font-size: 11.5px; font-weight: 700; color: #000000; border-top: 1px dashed #000000; display: inline-block; padding-top: 4px; width: 170px;">
-              Authorized Signatory
+      <div class="left-side-area">
+        ${
+          receiptSrc
+            ? `
+            <div style="display: flex; align-items: center; justify-content: center; flex: 1;">
+              <img src="${receiptSrc}" class="receipt-img" alt="Transport Receipt" />
             </div>
-          </div>
-          `
-      }
+            `
+            : hasBankDetails
+            ? `
+            <div class="bank-box">
+              <div class="bank-header">Bank & Payment Details:</div>
+              ${storeSettings.bankName ? `<div>Bank: <strong>${storeSettings.bankName}</strong></div>` : ''}
+              ${storeSettings.bankAccountNo ? `<div>A/C No: <strong>${storeSettings.bankAccountNo}</strong></div>` : ''}
+              ${storeSettings.bankIfsc ? `<div>IFSC: <strong>${storeSettings.bankIfsc}</strong> ${storeSettings.bankBranch ? `| Branch: ${storeSettings.bankBranch}` : ''}</div>` : ''}
+              ${storeSettings.upiId ? `<div>UPI ID: <strong>${storeSettings.upiId}</strong></div>` : ''}
+            </div>
+            `
+            : `
+            <div style="font-size: 11px; color: #64748B; font-style: italic;">Thank you for your business!</div>
+            `
+        }
+
+        <div class="sig-line-box">
+          Authorized Signatory
+        </div>
+      </div>
 
       <!-- Right Column: Summary Table -->
       <div class="summary-area">
