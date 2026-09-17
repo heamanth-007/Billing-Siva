@@ -162,7 +162,20 @@ export const generateBillHtml = (bill: BillPrintData): string => {
 
   const receiptSrc = bill.pdfData || bill.pdfUrl || '';
 
-  const productRowsHtml = (bill.products || []).map((item, idx) => {
+  const rawProducts = bill.products || [];
+  const fillerRowCount = Math.max(0, 6 - rawProducts.length);
+  const fillerRowsHtml = Array.from({ length: fillerRowCount }).map(() => `
+    <tr style="height: 24px;">
+      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
+      <td style="border: 1px solid #000000; padding: 4px 8px;">&nbsp;</td>
+      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
+      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
+      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
+      <td style="border: 1px solid #000000; padding: 4px 8px;">&nbsp;</td>
+    </tr>
+  `).join('');
+
+  const productRowsHtml = rawProducts.map((item, idx) => {
     const numAmt = parseFloat(String(item.amount).replace(/,/g, '')) || 0;
     const numRate = parseFloat(String(item.rate).replace(/,/g, '')) || 0;
     return `
@@ -186,7 +199,7 @@ export const generateBillHtml = (bill: BillPrintData): string => {
   <style>
     @page {
       size: A4 portrait;
-      margin: 8mm 10mm;
+      margin: 6mm 8mm;
     }
     *, *:before, *:after {
       box-sizing: border-box;
@@ -196,6 +209,7 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     html, body {
       background: #ffffff;
       color: #000000;
+      height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -203,15 +217,21 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     .bill-box-container {
       width: 100%;
       max-width: 800px;
+      min-height: 272mm;
       margin: 0 auto;
       border: 1.5px solid #000000;
       background: #ffffff;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-inside: avoid;
     }
     .top-header {
       text-align: center;
       padding: 10px 16px 8px 16px;
       border-bottom: 1.5px solid #000000;
+      flex-shrink: 0;
     }
     .comp-name {
       font-size: 24px;
@@ -253,6 +273,7 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       border-bottom: 1.5px solid #000000;
       font-size: 12px;
       table-layout: fixed;
+      flex-shrink: 0;
     }
     .meta-table td {
       border: 1px solid #000000;
@@ -267,6 +288,11 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     .meta-val {
       font-weight: 700;
       color: #000000;
+    }
+    .prod-container {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
     }
     .prod-table {
       width: 100%;
@@ -291,7 +317,10 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       display: flex;
       justify-content: space-between;
       align-items: stretch;
+      margin-top: auto;
+      flex-shrink: 0;
       page-break-inside: avoid;
+      background: #ffffff;
     }
     .left-side-area {
       flex: 1 1 50%;
@@ -301,11 +330,11 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       flex-direction: column;
       justify-content: space-between;
       box-sizing: border-box;
-      min-height: 120px;
+      min-height: 130px;
     }
     .receipt-img {
       max-width: 100%;
-      max-height: 140px;
+      max-height: 130px;
       object-fit: contain;
       display: block;
     }
@@ -357,10 +386,11 @@ export const generateBillHtml = (bill: BillPrintData): string => {
     }
     .summary-total-row td {
       font-weight: 900;
-      font-size: 13px;
+      font-size: 13.5px;
       padding: 6px 8px;
       background-color: #f8fafc;
       border-top: 1.5px solid #000000;
+      color: #000000;
     }
   </style>
 </head>
@@ -433,24 +463,27 @@ export const generateBillHtml = (bill: BillPrintData): string => {
       </tr>
     </table>
 
-    <!-- Products Table with Boxed Rows -->
-    <table class="prod-table">
-      <thead>
-        <tr>
-          <th style="width: 38px; text-align: center;">Si.No</th>
-          <th style="text-align: left; padding: 5px 8px;">Particular / Product Description</th>
-          <th style="width: 65px; text-align: center;">Qty</th>
-          <th style="width: 75px; text-align: right;">Rate (₹)</th>
-          <th style="width: 75px; text-align: center;">Unit</th>
-          <th style="width: 95px; text-align: right; padding: 5px 8px;">Amount (₹)</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${productRowsHtml || '<tr><td colspan="6" style="text-align:center; padding:12px; border:1px solid #000;">No product items in bill</td></tr>'}
-      </tbody>
-    </table>
+    <!-- Products Table Area (Expands naturally) -->
+    <div class="prod-container">
+      <table class="prod-table">
+        <thead>
+          <tr>
+            <th style="width: 38px; text-align: center;">Si.No</th>
+            <th style="text-align: left; padding: 5px 8px;">Particular / Product Description</th>
+            <th style="width: 65px; text-align: center;">Qty</th>
+            <th style="width: 75px; text-align: right;">Rate (₹)</th>
+            <th style="width: 75px; text-align: center;">Unit</th>
+            <th style="width: 95px; text-align: right; padding: 5px 8px;">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${productRowsHtml || '<tr><td colspan="6" style="text-align:center; padding:16px; border:1px solid #000;">No product items in bill</td></tr>'}
+          ${fillerRowsHtml}
+        </tbody>
+      </table>
+    </div>
 
-    <!-- Bottom Section: Receipt or Signatory Box on Left & Summary Box on Right -->
+    <!-- Bottom Fixed Section: Receipt or Bank/Signatory Box on Left & Summary Calculation Box on Right -->
     <div class="bottom-section">
       <div class="left-side-area">
         ${
@@ -480,7 +513,7 @@ export const generateBillHtml = (bill: BillPrintData): string => {
         </div>
       </div>
 
-      <!-- Right Column: Summary Table -->
+      <!-- Right Column: Amount Calculation Summary Table -->
       <div class="summary-area">
         <table class="summary-table">
           <tbody>
@@ -521,8 +554,8 @@ export const generateBillHtml = (bill: BillPrintData): string => {
                 : ''
             }
             <tr class="summary-total-row">
-              <td>Total Amount</td>
-              <td class="summary-val-cell">${formattedTotal}</td>
+              <td style="font-weight: 800; font-size: 12px;">Total Amount</td>
+              <td class="summary-val-cell" style="font-size: 13.5px; font-weight: 900; color: #000000;">${formattedTotal}</td>
             </tr>
           </tbody>
         </table>
