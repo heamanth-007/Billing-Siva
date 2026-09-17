@@ -332,11 +332,23 @@ export const generateBillHtml = (bill: BillPrintData): string => {
         </td>
       </tr>
       <tr>
-        <td>
-          <span class="meta-label">Customer Name:</span>
-          <span class="meta-val">${bill.customerName || '-'}</span>
+        <td style="vertical-align: top;">
+          <div>
+            <span class="meta-label">Customer Name:</span>
+            <span class="meta-val">${bill.customerName || '-'}</span>
+          </div>
+          ${
+            bill.customerPhone && bill.customerPhone.trim() !== '' && bill.customerPhone !== '-'
+              ? `<div style="font-size:11.5px; margin-top:2px; color:#1e293b;"><span style="color:#64748b;">Mobile:</span> <strong>${bill.customerPhone}</strong></div>`
+              : ''
+          }
+          ${
+            bill.customerAddress && bill.customerAddress.trim() !== '' && bill.customerAddress !== '-'
+              ? `<div style="font-size:11px; margin-top:2px; color:#334155;"><span style="color:#64748b;">Address:</span> <span>${bill.customerAddress}</span></div>`
+              : ''
+          }
         </td>
-        <td>
+        <td style="vertical-align: top;">
           <span class="meta-label">Company Name:</span>
           <span class="meta-val">${displayCompanyName}</span>
         </td>

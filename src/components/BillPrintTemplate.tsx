@@ -217,11 +217,25 @@ export const BillPrintTemplate: React.FC<BillPrintTemplateProps> = ({ bill }) =>
             </td>
           </tr>
           <tr>
-            <td style={{ border: '1px solid #000000', padding: '5px 10px' }}>
-              <span style={{ color: '#475569', fontWeight: 500, marginRight: '4px' }}>Customer Name:</span>
-              <strong style={{ color: '#000000' }}>{bill.customerName || '-'}</strong>
+            <td style={{ border: '1px solid #000000', padding: '5px 10px', verticalAlign: 'top' }}>
+              <div>
+                <span style={{ color: '#475569', fontWeight: 500, marginRight: '4px' }}>Customer Name:</span>
+                <strong style={{ color: '#000000' }}>{bill.customerName || '-'}</strong>
+              </div>
+              {bill.customerPhone && bill.customerPhone.trim() !== '' && bill.customerPhone !== '-' && (
+                <div style={{ fontSize: '11.5px', color: '#1E293B', marginTop: '2px' }}>
+                  <span style={{ color: '#475569', fontWeight: 500 }}>Mobile: </span>
+                  <strong>{bill.customerPhone}</strong>
+                </div>
+              )}
+              {bill.customerAddress && bill.customerAddress.trim() !== '' && bill.customerAddress !== '-' && (
+                <div style={{ fontSize: '11px', color: '#334155', marginTop: '2px' }}>
+                  <span style={{ color: '#475569', fontWeight: 500 }}>Address: </span>
+                  <span>{bill.customerAddress}</span>
+                </div>
+              )}
             </td>
-            <td style={{ border: '1px solid #000000', padding: '5px 10px' }}>
+            <td style={{ border: '1px solid #000000', padding: '5px 10px', verticalAlign: 'top' }}>
               <span style={{ color: '#475569', fontWeight: 500, marginRight: '4px' }}>Company Name:</span>
               <strong style={{ color: '#000000' }}>{displayCompanyName}</strong>
             </td>

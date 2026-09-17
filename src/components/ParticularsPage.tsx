@@ -59,8 +59,18 @@ interface ParticularsPageProps {
 
 const DRAFT_BILL_STORAGE_KEY = 'dheeksha_draft_bill';
 
+interface CustomerOption {
+  id: string;
+  name: string;
+  mobile?: string;
+  address?: string;
+  gst?: string;
+}
+
 interface DraftBillState {
   customerName?: string;
+  customerPhone?: string;
+  customerAddress?: string;
   billNo?: string;
   billDate?: string;
   discount?: string;
@@ -87,7 +97,7 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
   const draft = useMemo(() => getSavedDraft(), []);
 
   // Dropdown options
-  const [customerOptions, setCustomerOptions] = useState<{ id: string; name: string }[]>([]);
+  const [customerOptions, setCustomerOptions] = useState<CustomerOption[]>([]);
   const [, setCompanyOptions] = useState<{ id: string; name: string }[]>([]);
   const [productOptions, setProductOptions] = useState<ProductCatalogOption[]>([]);
 
@@ -95,6 +105,8 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
   const [customerName, setCustomerName] = useState<string>(() => {
     return initialCustomerName || draft.customerName || '';
   });
+  const [customerPhone, setCustomerPhone] = useState<string>(() => draft.customerPhone || '');
+  const [customerAddress, setCustomerAddress] = useState<string>(() => draft.customerAddress || '');
   const [company, setCompany] = useState<string>(() => {
     return storeSettings.companyName || 'General';
   });
@@ -125,6 +137,8 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
   useEffect(() => {
     const draftPayload: DraftBillState = {
       customerName,
+      customerPhone,
+      customerAddress,
       billNo,
       billDate,
       discount,
@@ -138,7 +152,7 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
     } catch (e) {
       console.warn('Failed to auto-save draft bill to localStorage', e);
     }
-  }, [customerName, billNo, billDate, discount, transport, packing, tax, productRows]);
+  }, [customerName, customerPhone, customerAddress, billNo, billDate, discount, transport, packing, tax, productRows]);
 
   // Listen for settings update (when user updates company name/logo/tax settings in Settings)
   useEffect(() => {
@@ -169,8 +183,24 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
       ]);
 
       if (Array.isArray(custRes) && custRes.length > 0) {
-        const mapped = custRes.map((c: any) => ({ id: c._id || c.id, name: c.name }));
+        const mapped: CustomerOption[] = custRes.map((c: any) => ({
+          id: c._id || c.id,
+          name: c.name || '',
+          mobile: c.mobile && c.mobile !== '-' ? c.mobile : '',
+          address: c.address && c.address !== '-' ? c.address : '',
+          gst: c.gst && c.gst !== 'N/A' ? c.gst : '',
+        }));
         setCustomerOptions(mapped);
+
+        // Auto-fill phone/address if customer is already selected
+        const currentName = initialCustomerName || customerName;
+        if (currentName) {
+          const match = mapped.find((c) => c.name.toLowerCase() === currentName.trim().toLowerCase());
+          if (match) {
+            setCustomerPhone((prev) => prev || match.mobile || '');
+            setCustomerAddress((prev) => prev || match.address || '');
+          }
+        }
       }
 
       if (Array.isArray(compRes) && compRes.length > 0) {
@@ -259,8 +289,29 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
   useEffect(() => {
     if (initialCustomerName) {
       setCustomerName(initialCustomerName);
+      const match = customerOptions.find(
+        (c) => c.name.toLowerCase() === initialCustomerName.trim().toLowerCase()
+      );
+      if (match) {
+        if (match.mobile) setCustomerPhone(match.mobile);
+        if (match.address) setCustomerAddress(match.address);
+      }
     }
-  }, [initialCustomerName]);
+  }, [initialCustomerName, customerOptions]);
+
+  const handleCustomerSelect = (val: string | null) => {
+    const nameVal = val || '';
+    setCustomerName(nameVal);
+    if (nameVal.trim()) {
+      const match = customerOptions.find(
+        (c) => c.name.toLowerCase() === nameVal.trim().toLowerCase()
+      );
+      if (match) {
+        if (match.mobile) setCustomerPhone(match.mobile);
+        if (match.address) setCustomerAddress(match.address);
+      }
+    }
+  };
 
   // Add Product Item to Bill Row
   const handleAddProductItem = () => {
@@ -338,6 +389,8 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
         billNo: billNo.trim() || `INV-${Date.now().toString().slice(-4)}`,
         date: billDate,
         customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerAddress: customerAddress.trim(),
         companyName: company || storeSettings.companyName || 'General',
         transport: transport || '0',
         caseCount: String(totalCases),
@@ -362,6 +415,8 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
           billNo: payload.billNo,
           date: payload.date,
           customerName: payload.customerName,
+          customerPhone: payload.customerPhone,
+          customerAddress: payload.customerAddress,
           companyName: payload.companyName,
           transport: payload.transport,
           caseCount: payload.caseCount,
@@ -379,6 +434,8 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
       // Reset Bill Form & Reload Recent Bills
       setProductRows([]);
       setCustomerName('');
+      setCustomerPhone('');
+      setCustomerAddress('');
       setDiscount('0');
       setTransport('0');
       setPacking('0');
@@ -402,11 +459,13 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
 
   // Clear Draft Bill Form
   const handleClearDraft = () => {
-    if (productRows.length > 0 || customerName.trim() !== '') {
+    if (productRows.length > 0 || customerName.trim() !== '' || customerPhone.trim() !== '' || customerAddress.trim() !== '') {
       if (!window.confirm('Are you sure you want to clear this draft bill?')) return;
     }
     setProductRows([]);
     setCustomerName('');
+    setCustomerPhone('');
+    setCustomerAddress('');
     setDiscount('0');
     setTransport('0');
     setPacking('0');
@@ -488,8 +547,10 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                   size="small"
                   options={customerOptions.map((c) => c.name)}
                   value={customerName || ''}
-                  onChange={(_, val) => setCustomerName(val || '')}
-                  onInputChange={(_, val) => setCustomerName(val || '')}
+                  onChange={(_, val) => handleCustomerSelect(val)}
+                  onInputChange={(_, val) => {
+                    setCustomerName(val || '');
+                  }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -501,6 +562,40 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                   )}
                 />
               </Box>
+
+              {/* Customer Phone & Address (Optional) */}
+              <Grid container spacing={1.5}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#786C58', mb: 0.4 }}>
+                    Customer Mobile (Optional)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="e.g. 9876543210"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    sx={{
+                      '& .MuiInputBase-input': { fontSize: '13px', fontWeight: 500 },
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#786C58', mb: 0.4 }}>
+                    Customer Address (Optional)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="e.g. Sivakasi, Tamil Nadu"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    sx={{
+                      '& .MuiInputBase-input': { fontSize: '13px', fontWeight: 500 },
+                    }}
+                  />
+                </Grid>
+              </Grid>
 
               {/* Bill No & Date (Auto-generated & Non-editable / Read-only) */}
               <Grid container spacing={1.5}>

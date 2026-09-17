@@ -199,6 +199,8 @@ export const AllCustomersPage: FC<AllCustomersPageProps> = ({
       billNo: bill.billNo || '',
       date: bill.date || '',
       customerName: bill.customerName || '',
+      customerPhone: bill.customerPhone || '',
+      customerAddress: bill.customerAddress || '',
       companyName:
         bill.companyName && bill.companyName.trim() !== '' && bill.companyName !== 'General'
           ? bill.companyName
