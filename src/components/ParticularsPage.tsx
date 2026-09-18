@@ -359,17 +359,28 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
     return productRows.reduce((acc, row) => acc + (parseFloat(row.quantity) || 0), 0);
   }, [productRows]);
 
-  const grandTotal = useMemo(() => {
-    const transportAmt = parseFloat(transport) || 0;
-    const packingAmt = parseFloat(packing) || 0;
-    const isTaxEnabled = Boolean(storeSettings.enableTax);
-    const taxPercent = isTaxEnabled ? (parseFloat(tax) || 0) : 0;
+  const packingAmount = useMemo(() => {
+    const rawPack = String(packing).trim();
+    const packNum = parseFloat(rawPack.replace(/[^0-9.]/g, '')) || 0;
+    if (packNum <= 0) return 0;
+    if (rawPack.startsWith('₹')) {
+      return packNum;
+    }
+    return (subtotal * packNum) / 100;
+  }, [packing, subtotal]);
 
+  const taxAmount = useMemo(() => {
+    const rawTax = String(tax).trim();
+    const taxNum = parseFloat(rawTax.replace(/[^0-9.]/g, '')) || 0;
+    if (taxNum <= 0) return 0;
+    const baseForTax = Math.max(0, subtotal - discountAmount + packingAmount);
+    return (baseForTax * taxNum) / 100;
+  }, [tax, subtotal, discountAmount, packingAmount]);
+
+  const grandTotal = useMemo(() => {
     const afterDiscount = Math.max(0, subtotal - discountAmount);
-    const withAdditions = afterDiscount + transportAmt + packingAmt;
-    const taxAmt = taxPercent > 0 ? (withAdditions * taxPercent) / 100 : 0;
-    return withAdditions + taxAmt;
-  }, [subtotal, discountAmount, transport, packing, tax, storeSettings.enableTax]);
+    return afterDiscount + packingAmount + taxAmount;
+  }, [subtotal, discountAmount, packingAmount, taxAmount]);
 
   // Save Bill to DB
   const handleSaveBill = async (andPrint: boolean = false) => {
@@ -662,13 +673,13 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
 
               <Divider sx={{ my: 0.5, borderColor: '#FEF3C7' }} />
 
-              {/* Additional Adjustments: Discount, Transport, Packing, (Tax only if enabled) */}
+              {/* Additional Adjustments: Discount, Packing (%), Tax (%) */}
               <Typography sx={{ fontSize: '14px', fontWeight: 700, color: '#78350F' }}>
                 Adjustments & Charges
               </Typography>
 
               <Grid container spacing={1.5}>
-                <Grid size={{ xs: storeSettings.enableTax ? 6 : 4 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#786C58', mb: 0.4 }}>
                     Discount (% or ₹)
                   </Typography>
@@ -677,59 +688,44 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                     size="small"
                     value={discount}
                     onChange={(e) => setDiscount(e.target.value)}
+                    placeholder="e.g. 5% or 50"
                     sx={{
                       '& .MuiInputBase-input': { fontSize: '13px', fontWeight: 600 },
                     }}
                   />
                 </Grid>
 
-                <Grid size={{ xs: storeSettings.enableTax ? 6 : 4 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#786C58', mb: 0.4 }}>
-                    Transport (₹)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={transport}
-                    onChange={(e) => setTransport(e.target.value)}
-                    sx={{
-                      '& .MuiInputBase-input': { fontSize: '13px', fontWeight: 600 },
-                    }}
-                  />
-                </Grid>
-
-                <Grid size={{ xs: storeSettings.enableTax ? 6 : 4 }}>
-                  <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#786C58', mb: 0.4 }}>
-                    Packing (₹)
+                    Packing (%)
                   </Typography>
                   <TextField
                     fullWidth
                     size="small"
                     value={packing}
                     onChange={(e) => setPacking(e.target.value)}
+                    placeholder="e.g. 2 or 2%"
                     sx={{
                       '& .MuiInputBase-input': { fontSize: '13px', fontWeight: 600 },
                     }}
                   />
                 </Grid>
 
-                {storeSettings.enableTax && (
-                  <Grid size={{ xs: 6 }}>
-                    <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#786C58', mb: 0.4 }}>
-                      Tax / GST (%)
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      value={tax}
-                      onChange={(e) => setTax(e.target.value)}
-                      placeholder="e.g. 18"
-                      sx={{
-                        '& .MuiInputBase-input': { fontSize: '13px', fontWeight: 600 },
-                      }}
-                    />
-                  </Grid>
-                )}
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#786C58', mb: 0.4 }}>
+                    Tax / GST (%)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={tax}
+                    onChange={(e) => setTax(e.target.value)}
+                    placeholder="e.g. 18 or 18%"
+                    sx={{
+                      '& .MuiInputBase-input': { fontSize: '13px', fontWeight: 600 },
+                    }}
+                  />
+                </Grid>
               </Grid>
 
               {/* Summary Total Card with Complete Breakdown */}
@@ -758,29 +754,24 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                   </Box>
                 )}
 
-                {parseFloat(transport) > 0 && (
+                {packingAmount > 0 && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.6 }}>
-                    <Typography sx={{ fontSize: '12.5px', color: '#786C58', fontWeight: 600 }}>Transport Charges:</Typography>
+                    <Typography sx={{ fontSize: '12.5px', color: '#786C58', fontWeight: 600 }}>
+                      Packing Charges ({packing.includes('%') ? packing : `${packing}%`}):
+                    </Typography>
                     <Typography sx={{ fontSize: '12.5px', color: '#1F1714', fontWeight: 700 }}>
-                      +₹{parseFloat(transport).toFixed(2)}
+                      +₹{packingAmount.toFixed(2)}
                     </Typography>
                   </Box>
                 )}
 
-                {parseFloat(packing) > 0 && (
+                {taxAmount > 0 && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.6 }}>
-                    <Typography sx={{ fontSize: '12.5px', color: '#786C58', fontWeight: 600 }}>Packing Charges:</Typography>
-                    <Typography sx={{ fontSize: '12.5px', color: '#1F1714', fontWeight: 700 }}>
-                      +₹{parseFloat(packing).toFixed(2)}
+                    <Typography sx={{ fontSize: '12.5px', color: '#786C58', fontWeight: 600 }}>
+                      GST / Tax ({tax.includes('%') ? tax : `${tax}%`}):
                     </Typography>
-                  </Box>
-                )}
-
-                {storeSettings.enableTax && parseFloat(tax) > 0 && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.6 }}>
-                    <Typography sx={{ fontSize: '12.5px', color: '#786C58', fontWeight: 600 }}>GST / Tax ({tax}%):</Typography>
                     <Typography sx={{ fontSize: '12.5px', color: '#1F1714', fontWeight: 700 }}>
-                      +₹{(((Math.max(0, subtotal - discountAmount) + parseFloat(transport || '0') + parseFloat(packing || '0')) * parseFloat(tax)) / 100).toFixed(2)}
+                      +₹{taxAmount.toFixed(2)}
                     </Typography>
                   </Box>
                 )}

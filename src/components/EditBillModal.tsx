@@ -167,10 +167,10 @@ export const EditBillModal: React.FC<EditBillModalProps> = ({
     const raw = String(packing).trim();
     const num = parseFloat(raw.replace(/[^0-9.]/g, '')) || 0;
     if (num <= 0) return 0;
-    if (raw.includes('%')) {
-      return (subtotal * num) / 100;
+    if (raw.startsWith('₹')) {
+      return num;
     }
-    return num;
+    return (subtotal * num) / 100;
   }, [packing, subtotal]);
 
   const taxAmt = useMemo(() => {
@@ -553,29 +553,29 @@ export const EditBillModal: React.FC<EditBillModalProps> = ({
                 Discounts, Packing & Tax
               </Typography>
               <Grid container spacing={1.5}>
-                <Grid size={{ xs: 6 }}>
+                <Grid size={{ xs: 4 }}>
                   <TextField
                     fullWidth
                     size="small"
-                    label="Discount (₹ or %)"
+                    label="Discount (% / ₹)"
                     value={discount}
                     onChange={(e) => setDiscount(e.target.value)}
                   />
                 </Grid>
-                <Grid size={{ xs: 6 }}>
+                <Grid size={{ xs: 4 }}>
                   <TextField
                     fullWidth
                     size="small"
-                    label="Packing (₹ or %)"
+                    label="Packing (%)"
                     value={packing}
                     onChange={(e) => setPacking(e.target.value)}
                   />
                 </Grid>
-                <Grid size={{ xs: 12 }}>
+                <Grid size={{ xs: 4 }}>
                   <TextField
                     fullWidth
                     size="small"
-                    label="GST / Tax Rate (%)"
+                    label="Tax / GST (%)"
                     value={tax}
                     onChange={(e) => setTax(e.target.value)}
                   />

@@ -83,19 +83,19 @@ export const generateBillHtml = (bill: BillPrintData): string => {
   const transportAmt = (!isNaN(Number(rawTransportStr)) && transNum > 0) ? transNum : 0;
   const transportDisplayName = (!rawTransportStr || rawTransportStr === '0' || rawTransportStr === '-') ? '-' : rawTransportStr;
 
-  // Packing calculation - amount by default, only percentage if explicitly formatted with %
+  // Packing calculation - percentage by default
   const rawPackStr = String(bill.packing ?? '').trim();
   const cleanPack = rawPackStr.replace(/[^0-9.]/g, '');
   const packNum = parseFloat(cleanPack) || 0;
   let packingAmt = 0;
   let packingLabel = 'Packing Charges';
   if (packNum > 0) {
-    if (rawPackStr.includes('%')) {
-      packingAmt = (subtotal * packNum) / 100;
-      packingLabel = `Packing Charges (${packNum}%)`;
-    } else {
+    if (rawPackStr.startsWith('₹')) {
       packingAmt = packNum;
       packingLabel = `Packing Charges`;
+    } else {
+      packingAmt = (subtotal * packNum) / 100;
+      packingLabel = `Packing Charges (${packNum}%)`;
     }
   }
 
@@ -163,17 +163,6 @@ export const generateBillHtml = (bill: BillPrintData): string => {
   const receiptSrc = bill.pdfData || bill.pdfUrl || '';
 
   const rawProducts = bill.products || [];
-  const fillerRowCount = Math.max(0, 6 - rawProducts.length);
-  const fillerRowsHtml = Array.from({ length: fillerRowCount }).map(() => `
-    <tr style="height: 24px;">
-      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
-      <td style="border: 1px solid #000000; padding: 4px 8px;">&nbsp;</td>
-      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
-      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
-      <td style="border: 1px solid #000000; padding: 4px 6px;">&nbsp;</td>
-      <td style="border: 1px solid #000000; padding: 4px 8px;">&nbsp;</td>
-    </tr>
-  `).join('');
 
   const productRowsHtml = rawProducts.map((item, idx) => {
     const numAmt = parseFloat(String(item.amount).replace(/,/g, '')) || 0;
@@ -478,7 +467,6 @@ export const generateBillHtml = (bill: BillPrintData): string => {
         </thead>
         <tbody>
           ${productRowsHtml || '<tr><td colspan="6" style="text-align:center; padding:16px; border:1px solid #000;">No product items in bill</td></tr>'}
-          ${fillerRowsHtml}
         </tbody>
       </table>
     </div>

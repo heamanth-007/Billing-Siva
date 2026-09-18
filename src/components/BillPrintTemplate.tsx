@@ -85,19 +85,19 @@ export const BillPrintTemplate: React.FC<BillPrintTemplateProps> = ({ bill }) =>
   const transportAmt = (!isNaN(Number(rawTransportStr)) && transNum > 0) ? transNum : 0;
   const transportDisplayName = (!rawTransportStr || rawTransportStr === '0' || rawTransportStr === '-') ? '-' : rawTransportStr;
 
-  // Packing calculation - amount by default, only percentage if explicitly formatted with %
+  // Packing calculation - percentage by default
   const rawPackStr = String(bill.packing ?? '').trim();
   const cleanPack = rawPackStr.replace(/[^0-9.]/g, '');
   const packNum = parseFloat(cleanPack) || 0;
   let packingAmt = 0;
   let packingLabel = 'Packing Charges';
   if (packNum > 0) {
-    if (rawPackStr.includes('%')) {
-      packingAmt = (subtotal * packNum) / 100;
-      packingLabel = `Packing Charges (${packNum}%)`;
-    } else {
+    if (rawPackStr.startsWith('₹')) {
       packingAmt = packNum;
       packingLabel = `Packing Charges`;
+    } else {
+      packingAmt = (subtotal * packNum) / 100;
+      packingLabel = `Packing Charges (${packNum}%)`;
     }
   }
 
@@ -364,17 +364,6 @@ export const BillPrintTemplate: React.FC<BillPrintTemplateProps> = ({ bill }) =>
                 );
               })
             )}
-            {/* Blank filler rows to maintain clean boxed grid structure */}
-            {Array.from({ length: Math.max(0, 6 - (bill.products || []).length) }).map((_, fIdx) => (
-              <tr key={`filler-${fIdx}`} style={{ height: '24px' }}>
-                <td style={{ border: '1px solid #000000', padding: '4px 6px' }}>&nbsp;</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 8px' }}>&nbsp;</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 6px' }}>&nbsp;</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 6px' }}>&nbsp;</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 6px' }}>&nbsp;</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 8px' }}>&nbsp;</td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
