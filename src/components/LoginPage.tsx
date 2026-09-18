@@ -15,6 +15,7 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import { AuthApi, SettingsApi } from '../services/api';
 import { getStoredSettings, DEFAULT_COMPANY_SETTINGS, type CompanySettings } from './SettingsPage';
+import sivaBalajiLogo from '../assets/siva-balaji.jpeg';
 
 interface LoginPageProps {
   onLoginSuccess: (user: { username: string; role: string }) => void;
@@ -119,57 +120,22 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
           position: 'relative',
         }}
       >
-        {/* Top Logo / Festive Shield Badge */}
-        {settings.logoUrl ? (
-          <Box
-            component="img"
-            src={settings.logoUrl}
-            alt="Logo"
-            sx={{
-              maxHeight: 64,
-              maxWidth: 180,
-              objectFit: 'contain',
-              display: 'block',
-              mx: 'auto',
-              mb: 2.2,
-              filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.15))',
-            }}
-          />
-        ) : (
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)',
-              border: '2px solid #F59E0B',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 2.2,
-              boxShadow: '0 4px 14px rgba(220, 38, 38, 0.35)',
-            }}
-          >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 2L4 5.5V11.5C4 16.6 7.4 21.3 12 22.5C16.6 21.3 20 16.6 20 11.5V5.5L12 2Z"
-                stroke="#FEF08A"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="rgba(254, 240, 138, 0.2)"
-              />
-              <circle cx="12" cy="10" r="2.2" stroke="#FEF08A" strokeWidth="1.8" />
-              <path
-                d="M8.5 16C8.5 14.35 10.07 13 12 13C13.93 13 15.5 14.35 15.5 16"
-                stroke="#FEF08A"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-          </Box>
-        )}
+        {/* Top Logo */}
+        <Box
+          component="img"
+          src={settings.logoUrl || sivaBalajiLogo}
+          alt="Siva Balaji Crackers"
+          sx={{
+            height: 64,
+            maxWidth: 180,
+            objectFit: 'contain',
+            display: 'block',
+            mx: 'auto',
+            mb: 2.2,
+            borderRadius: '8px',
+            filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.15))',
+          }}
+        />
 
         {/* Heading */}
         <Typography
@@ -198,7 +164,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
             mb: 3.5,
           }}
         >
-          {settings.companyName ? `${settings.companyName} Billing & Management` : 'Billing & Management System'}
+          {settings.companyName || 'Siva Balaji Crackers'}
         </Typography>
 
         {/* Error Alert if any */}
@@ -406,7 +372,7 @@ export const LoginPage: FC<LoginPageProps> = ({ onLoginSuccess }) => {
           }}
         >
           <Typography sx={{ fontSize: '12px', color: '#B45309', fontWeight: 600 }}>
-            {settings.companyName || 'Billing & Management System'} {settings.tagline ? `• ${settings.tagline}` : ''}
+            {settings.companyName || 'Siva Balaji Crackers'} {settings.tagline ? `• ${settings.tagline}` : ''}
           </Typography>
         </Box>
       </Paper>

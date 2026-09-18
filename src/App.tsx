@@ -25,9 +25,7 @@ function App() {
     localStorage.removeItem('dheeksha_active_customer');
     const updateTitle = () => {
       const settings = getStoredSettings();
-      if (settings.companyName) {
-        document.title = `${settings.companyName} - Billing & Management`;
-      }
+      document.title = `${settings.companyName || 'Siva Balaji Crackers'} - Billing & Management`;
     };
     updateTitle();
 

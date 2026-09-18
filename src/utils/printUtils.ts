@@ -576,7 +576,7 @@ export const generateCustomerListPrintHtml = (
   dateRangeText?: string
 ): string => {
   const storeSettings = getStoredSettings();
-  const compName = (storeSettings.companyName || 'BILLING & MANAGEMENT').toUpperCase();
+  const compName = (storeSettings.companyName || 'SIVA BALAJI CRACKERS').toUpperCase();
   const compSub = storeSettings.tagline || `Wholesale & Retail Trading • ${storeSettings.city || 'Sivakasi'}`;
   const phoneVal = storeSettings.phone || '+91 98765 43210';
 
@@ -908,7 +908,7 @@ export const generateLedgerStatementHtml = (
   dateRangeText?: string
 ): string => {
   const storeSettings = getStoredSettings();
-  const compName = (storeSettings.companyName || 'BILLING & MANAGEMENT').toUpperCase();
+  const compName = (storeSettings.companyName || 'SIVA BALAJI CRACKERS').toUpperCase();
   const compSub = storeSettings.tagline || `Wholesale & Retail Trading • ${storeSettings.city || 'Sivakasi'}`;
 
   const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
@@ -1012,7 +1012,7 @@ export const printLedgerStatementDirectly = (customerName: string, ledgerEntries
  */
 export const generateParticularsListPrintHtml = (particulars: any[], dateRangeText?: string): string => {
   const storeSettings = getStoredSettings();
-  const compName = (storeSettings.companyName || 'BILLING & MANAGEMENT').toUpperCase();
+  const compName = (storeSettings.companyName || 'SIVA BALAJI CRACKERS').toUpperCase();
   const compSub = storeSettings.tagline || `Wholesale & Retail Trading • ${storeSettings.city || 'Sivakasi'}`;
 
   const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
@@ -1112,7 +1112,7 @@ export const printParticularsListDirectly = (particulars: any[], dateRangeText?:
  */
 export const generateCompaniesListPrintHtml = (companies: any[]): string => {
   const storeSettings = getStoredSettings();
-  const compName = (storeSettings.companyName || 'BILLING & MANAGEMENT').toUpperCase();
+  const compName = (storeSettings.companyName || 'SIVA BALAJI CRACKERS').toUpperCase();
   const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
   const rowsHtml = companies.map((c, idx) => `
     <tr>
@@ -1178,7 +1178,7 @@ export const printCompaniesListDirectly = (companies: any[]) => {
  */
 export const generateProductsListPrintHtml = (products: any[]): string => {
   const storeSettings = getStoredSettings();
-  const compName = (storeSettings.companyName || 'BILLING & MANAGEMENT').toUpperCase();
+  const compName = (storeSettings.companyName || 'SIVA BALAJI CRACKERS').toUpperCase();
   const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
   const rowsHtml = products.map((p, idx) => `
     <tr>

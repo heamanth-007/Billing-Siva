@@ -25,6 +25,7 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import FormatListNumberedRoundedIcon from '@mui/icons-material/FormatListNumberedRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import { getStoredSettings, type CompanySettings } from './SettingsPage';
+import sivaBalajiLogo from '../assets/siva-balaji.jpeg';
 
 export type NavTab = 'All Customers' | 'Billing' | 'Categories' | 'Price List' | 'Product' | 'Settings';
 
@@ -63,13 +64,6 @@ export const Navbar: FC<NavbarProps> = ({
     };
   }, []);
 
-  const handleTabClick = (tab: NavTab) => {
-    if (onSelectTab) {
-      onSelectTab(tab);
-    }
-    setMobileDrawerOpen(false);
-  };
-
   const handleProfileClick = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -78,10 +72,26 @@ export const Navbar: FC<NavbarProps> = ({
     setAnchorEl(null);
   };
 
+  const handleTabClick = (tab: NavTab) => {
+    if (onSelectTab) {
+      onSelectTab(tab);
+    }
+    setMobileDrawerOpen(false);
+  };
+
+  const handleSettingsClick = () => {
+    handleCloseMenu();
+    if (onSelectTab) {
+      onSelectTab('Settings');
+    }
+  };
+
   const handleLogoutClick = () => {
     handleCloseMenu();
     setMobileDrawerOpen(false);
-    if (onLogout) onLogout();
+    if (onLogout) {
+      onLogout();
+    }
   };
 
   return (
@@ -89,12 +99,10 @@ export const Navbar: FC<NavbarProps> = ({
       <Box
         component="header"
         sx={{
-          width: '100%',
           backgroundColor: '#FFFFFF',
-          borderBottom: '2px solid #FDE68A',
-          background: 'linear-gradient(180deg, #FFFFFF 0%, #FFFDF7 100%)',
+          borderBottom: '1.5px solid #FDE68A',
           px: { xs: 1.5, sm: 2.5, md: 4 },
-          height: { xs: '58px', sm: '66px' },
+          height: { xs: 58, sm: 66 },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -111,59 +119,29 @@ export const Navbar: FC<NavbarProps> = ({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1,
+            gap: 1.2,
             cursor: 'pointer',
             minWidth: 0,
             maxWidth: { xs: '65%', sm: 'auto' },
           }}
         >
           {/* Logo */}
-          {companySettings.logoUrl ? (
-            <Box
-              component="img"
-              src={companySettings.logoUrl}
-              alt="Company Logo"
-              sx={{
-                height: { xs: 30, sm: 36 },
-                maxWidth: { xs: 40, sm: 48 },
-                width: 'auto',
-                objectFit: 'contain',
-                backgroundColor: 'transparent',
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.12))',
-                display: 'block',
-                flexShrink: 0,
-              }}
-            />
-          ) : (
-            <Box
-              sx={{
-                width: { xs: 32, sm: 36 },
-                height: { xs: 32, sm: 36 },
-                borderRadius: '8px',
-                border: '1.5px solid #F59E0B',
-                background: 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)',
-                flexShrink: 0,
-              }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M7 6H13C16.3137 6 19 8.68629 19 12C19 15.3137 16.3137 18 13 18H7V6Z"
-                  stroke="#FEF08A"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M10 9.5H13C14.3807 9.5 15.5 10.6193 15.5 12C15.5 13.3807 14.3807 14.5 13 14.5H10V9.5Z"
-                  fill="#FEF08A"
-                />
-              </svg>
-            </Box>
-          )}
+          <Box
+            component="img"
+            src={companySettings.logoUrl || sivaBalajiLogo}
+            alt="Siva Balaji Crackers"
+            sx={{
+              height: { xs: 34, sm: 42 },
+              maxWidth: { xs: 44, sm: 54 },
+              width: 'auto',
+              objectFit: 'contain',
+              borderRadius: '6px',
+              backgroundColor: 'transparent',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.12))',
+              display: 'block',
+              flexShrink: 0,
+            }}
+          />
 
           <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
             <Typography
@@ -179,7 +157,7 @@ export const Navbar: FC<NavbarProps> = ({
                 textOverflow: 'ellipsis',
               }}
             >
-              {companySettings.companyName || 'Billing & Management'}
+              {companySettings.companyName || 'Siva Balaji Crackers'}
             </Typography>
             <Typography
               sx={{
@@ -193,7 +171,7 @@ export const Navbar: FC<NavbarProps> = ({
                 textOverflow: 'ellipsis',
               }}
             >
-              {companySettings.tagline || (companySettings.city ? `${companySettings.city}` : 'Billing & Management')}
+              {companySettings.tagline || (companySettings.city ? `${companySettings.city}` : 'Siva Balaji Crackers')}
             </Typography>
           </Box>
         </Box>
@@ -339,10 +317,7 @@ export const Navbar: FC<NavbarProps> = ({
           </MenuItem>
           <Divider sx={{ my: 0.5, borderColor: '#FEF3C7' }} />
           <MenuItem
-            onClick={() => {
-              handleCloseMenu();
-              handleTabClick('Settings');
-            }}
+            onClick={handleSettingsClick}
             sx={{ py: 1 }}
           >
             <ListItemIcon>
@@ -443,13 +418,21 @@ export const Navbar: FC<NavbarProps> = ({
               borderBottom: '2px solid #F59E0B',
             }}
           >
-            <Box>
-              <Typography sx={{ fontSize: '15px', fontWeight: 800 }}>
-                {companySettings.companyName || 'Billing & Management'}
-              </Typography>
-              <Typography sx={{ fontSize: '11px', color: '#FEF08A', fontWeight: 600 }}>
-                Main Navigation
-              </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+              <Box
+                component="img"
+                src={companySettings.logoUrl || sivaBalajiLogo}
+                alt="Logo"
+                sx={{ width: 32, height: 32, objectFit: 'contain', borderRadius: '4px' }}
+              />
+              <Box>
+                <Typography sx={{ fontSize: '15px', fontWeight: 800 }}>
+                  {companySettings.companyName || 'Siva Balaji Crackers'}
+                </Typography>
+                <Typography sx={{ fontSize: '11px', color: '#FEF08A', fontWeight: 600 }}>
+                  Main Navigation
+                </Typography>
+              </Box>
             </Box>
             <IconButton onClick={() => setMobileDrawerOpen(false)} sx={{ color: '#FFFFFF' }}>
               <CloseRoundedIcon sx={{ fontSize: 20 }} />

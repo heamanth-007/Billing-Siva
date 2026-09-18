@@ -48,16 +48,16 @@ export interface CompanySettings {
 }
 
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyName: '',
-  tagline: '',
+  companyName: 'Siva Balaji Crackers',
+  tagline: 'Wholesale & Retail Crackers',
   ownerName: '',
   phone: '',
   whatsapp: '',
   email: '',
   address: '',
-  city: '',
+  city: 'Sivakasi',
   pincode: '',
-  state: '',
+  state: 'Tamil Nadu',
   gstin: '',
   pan: '',
   logoUrl: '',
