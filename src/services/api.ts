@@ -20,7 +20,7 @@ const getApiBaseUrl = (): string => {
 
   // Safe development fallback: ONLY used during local `vite dev`
   if (import.meta.env.DEV) {
-    return 'http://localhost:5004/api';
+    return 'http://localhost:5012/api';
   }
 
   // In production builds when no environment variable is provided,

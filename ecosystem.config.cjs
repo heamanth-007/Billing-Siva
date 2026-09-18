@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'dheeksha-trade-api',
+      name: 'siva-balaji-billing-api',
       cwd: './server',
       script: 'dist/index.js',
       instances: 1,
@@ -10,7 +10,7 @@ module.exports = {
       max_memory_restart: '500M',
       env: {
         NODE_ENV: 'production',
-        PORT: 5004,
+        PORT: 5012,
       },
     },
   ],
