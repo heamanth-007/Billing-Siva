@@ -8,7 +8,12 @@ export const getSettings = async (_req: Request, res: Response, next: NextFuncti
   try {
     let settings = await Settings.findOne();
     if (!settings) {
-      settings = await Settings.create({});
+      settings = await Settings.create({
+        companyName: 'Siva Balaji Crackers',
+        tagline: 'Wholesale & Retail Crackers',
+        city: 'Sivakasi',
+        state: 'Tamil Nadu',
+      });
     }
     res.status(200).json({ success: true, data: settings });
   } catch (error) {

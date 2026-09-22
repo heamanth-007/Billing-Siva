@@ -28,16 +28,16 @@ export interface ISettings extends Document {
 
 const SettingsSchema: Schema = new Schema(
   {
-    companyName: { type: String, default: '', trim: true },
-    tagline: { type: String, default: '', trim: true },
+    companyName: { type: String, default: 'Siva Balaji Crackers', trim: true },
+    tagline: { type: String, default: 'Wholesale & Retail Crackers', trim: true },
     ownerName: { type: String, default: '', trim: true },
     phone: { type: String, default: '', trim: true },
     whatsapp: { type: String, default: '', trim: true },
     email: { type: String, default: '', trim: true },
     address: { type: String, default: '', trim: true },
-    city: { type: String, default: '', trim: true },
+    city: { type: String, default: 'Sivakasi', trim: true },
     pincode: { type: String, default: '', trim: true },
-    state: { type: String, default: '', trim: true },
+    state: { type: String, default: 'Tamil Nadu', trim: true },
     gstin: { type: String, default: '', trim: true },
     pan: { type: String, default: '', trim: true },
     logoUrl: { type: String, default: '' },
