@@ -390,7 +390,7 @@ export const EditBillModal: React.FC<EditBillModalProps> = ({
             <TextField
               fullWidth
               size="small"
-              label="Total No. of Cases"
+              label="Total Pieces"
               value={caseCount}
               onChange={(e) => setCaseCount(e.target.value)}
               placeholder="e.g. 5"

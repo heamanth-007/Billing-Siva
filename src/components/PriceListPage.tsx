@@ -54,6 +54,7 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import Tesseract from 'tesseract.js';
 import { PriceListsApi, CategoriesApi } from '../services/api';
 import { getStoredSettings } from './SettingsPage';
+import { printPriceListDirectly } from '../utils/printUtils';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -1189,85 +1190,10 @@ export const PriceListPage: FC = () => {
 
   // Print Price List Direct
   const handlePrintPriceList = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const storeSettings = getStoredSettings();
-    const compName = storeSettings.companyName || 'Company Name';
-    const compUpper = compName.toUpperCase();
-    const compTagline = storeSettings.tagline || `Official Wholesale & Retail Price List • ${storeSettings.city || 'Sivakasi'}`;
-
-    const rowsHtml = filteredItems
-      .map(
-        (item, idx) => `
-      <tr>
-        <td style="text-align: center; border: 1px solid #ddd; padding: 6px 8px;">${item.slNo || idx + 1}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 10px; font-weight: 600;">${item.itemName}</td>
-        <td style="border: 1px solid #ddd; padding: 6px 8px; color: #666;">${item.category || 'General'}</td>
-        <td style="text-align: center; border: 1px solid #ddd; padding: 6px 8px;">${item.unit || 'Box'}</td>
-        <td style="text-align: right; border: 1px solid #ddd; padding: 6px 8px; color: #888;">₹${Number(item.mrp || 0).toFixed(2)}</td>
-        <td style="text-align: center; border: 1px solid #ddd; padding: 6px 8px;">${item.discountPercent ? `${item.discountPercent}%` : '—'}</td>
-        <td style="text-align: right; border: 1px solid #ddd; padding: 6px 10px; font-weight: 700; color: #b91c1c;">₹${Number(item.rate || 0).toFixed(2)}</td>
-      </tr>
-    `
-      )
-      .join('');
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${compName} - Price List</title>
-        <style>
-          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; color: #1f2937; }
-          .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 12px; margin-bottom: 16px; }
-          .title { font-size: 24px; font-weight: bold; color: #b91c1c; margin: 0; }
-          .subtitle { font-size: 13px; color: #d97706; font-weight: bold; text-transform: uppercase; margin-top: 4px; }
-          .meta { display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; margin-bottom: 12px; }
-          table { width: 100%; border-collapse: collapse; font-size: 13px; }
-          th { background-color: #fef3c7; color: #78350f; font-weight: bold; border: 1px solid #fde68a; padding: 8px; text-align: left; }
-          th.center, td.center { text-align: center; }
-          th.right, td.right { text-align: right; }
-          tr:nth-child(even) { background-color: #fafaf9; }
-          @media print {
-            body { margin: 10mm; }
-            button { display: none; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="title">${compUpper}</div>
-          <div class="subtitle">${compTagline}</div>
-        </div>
-        <div class="meta">
-          <span><strong>Category:</strong> ${selectedCategory === 'ALL' ? 'All Products' : selectedCategory}</span>
-          <span><strong>Date:</strong> ${new Date().toLocaleDateString('en-GB')}</span>
-          <span><strong>Total Items:</strong> ${filteredItems.length}</span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th class="center" style="width: 50px;">SL.NO</th>
-              <th>ITEM NAME</th>
-              <th>CATEGORY</th>
-              <th class="center" style="width: 70px;">UNIT</th>
-              <th class="right" style="width: 90px;">M.R.P</th>
-              <th class="center" style="width: 80px;">DISC %</th>
-              <th class="right" style="width: 100px;">NET RATE</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-        </table>
-        <script>
-          window.onload = function() { window.print(); }
-        </script>
-      </body>
-      </html>
-    `);
-    printWindow.document.close();
+    printPriceListDirectly(
+      filteredItems,
+      selectedCategory === 'ALL' ? 'All Products' : selectedCategory
+    );
   };
 
   // Open Add Modal

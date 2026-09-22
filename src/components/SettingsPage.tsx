@@ -21,6 +21,7 @@ import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
 import CircularProgress from '@mui/material/CircularProgress';
 import { SettingsApi } from '../services/api';
 
@@ -45,6 +46,7 @@ export interface CompanySettings {
   bankIfsc?: string;
   bankBranch?: string;
   upiId?: string;
+  defaultPrintFormat?: string;
 }
 
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
@@ -63,6 +65,7 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   logoUrl: '',
   enableTax: false,
   defaultTaxRate: '18',
+  defaultPrintFormat: 'a4-portrait',
   bankName: '',
   bankAccountNo: '',
   bankIfsc: '',
@@ -197,6 +200,7 @@ export const SettingsPage: React.FC = () => {
             bankIfsc: data.bankIfsc ?? DEFAULT_COMPANY_SETTINGS.bankIfsc,
             bankBranch: data.bankBranch ?? DEFAULT_COMPANY_SETTINGS.bankBranch,
             upiId: data.upiId ?? DEFAULT_COMPANY_SETTINGS.upiId,
+            defaultPrintFormat: data.defaultPrintFormat ?? DEFAULT_COMPANY_SETTINGS.defaultPrintFormat ?? 'a4-portrait',
           };
           setSettings(remoteSettings);
           localStorage.setItem('dheeksha_app_settings', JSON.stringify(remoteSettings));
@@ -326,6 +330,7 @@ export const SettingsPage: React.FC = () => {
           bankIfsc: data.bankIfsc ?? settings.bankIfsc,
           bankBranch: data.bankBranch ?? settings.bankBranch,
           upiId: data.upiId ?? settings.upiId,
+          defaultPrintFormat: data.defaultPrintFormat ?? settings.defaultPrintFormat ?? 'a4-portrait',
         };
         setSettings(syncedSettings);
         localStorage.setItem('dheeksha_app_settings', JSON.stringify(syncedSettings));
@@ -1123,6 +1128,68 @@ export const SettingsPage: React.FC = () => {
                     placeholder="e.g. company@upi or 9876543210@paytm"
                   />
                 </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Section 6: Print & Invoice Layout Format */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: '12px',
+                border: '1px solid #FDE68A',
+                backgroundColor: '#FFFFFF',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <PrintRoundedIcon sx={{ color: '#DC2626', fontSize: 20 }} />
+                <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#991B1B' }}>
+                  Default Invoice Print Format
+                </Typography>
+              </Box>
+
+              <Typography sx={{ fontSize: '12px', color: '#64748B', mb: 2 }}>
+                Choose the default page layout when opening the Print Bill modal. You can also quickly toggle between formats at any time while printing.
+              </Typography>
+
+              <Grid container spacing={2}>
+                {[
+                  { id: 'a4-portrait', title: '📄 A4 Portrait', desc: 'Standard Full Page Vertical Invoice' },
+                  { id: 'a4-landscape', title: '🖼️ A4 Landscape', desc: 'Wide Horizontal Layout (Single Bill)' },
+                  { id: 'a4-dual', title: '📑 A4 2-in-1 Dual Copy', desc: 'Customer + Transport/Office Copy on 1 Sheet' },
+                  { id: 'thermal', title: '🧾 Thermal (80mm)', desc: 'Compact POS Roll Slip for Thermal Printers' },
+                ].map((fmt) => {
+                  const isSelected = (settings.defaultPrintFormat || 'a4-portrait') === fmt.id;
+                  return (
+                    <Grid size={{ xs: 12, sm: 6 }} key={fmt.id}>
+                      <Box
+                        onClick={() => {
+                          handleChange('defaultPrintFormat', fmt.id);
+                          localStorage.setItem('dheeksha_bill_print_format', fmt.id);
+                        }}
+                        sx={{
+                          p: 1.6,
+                          borderRadius: '10px',
+                          border: isSelected ? '2px solid #DC2626' : '1px solid #E2E8F0',
+                          backgroundColor: isSelected ? '#FEF2F2' : '#F8FAFC',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          '&:hover': {
+                            borderColor: '#DC2626',
+                            backgroundColor: '#FFF5F5',
+                          },
+                        }}
+                      >
+                        <Typography sx={{ fontSize: '13.5px', fontWeight: 800, color: isSelected ? '#991B1B' : '#1E293B' }}>
+                          {fmt.title}
+                        </Typography>
+                        <Typography sx={{ fontSize: '11px', color: '#64748B', mt: 0.3 }}>
+                          {fmt.desc}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  );
+                })}
               </Grid>
             </Paper>
           </Box>

@@ -21,6 +21,7 @@ export interface ISettings extends Document {
   bankIfsc?: string;
   bankBranch?: string;
   upiId?: string;
+  defaultPrintFormat?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +43,7 @@ const SettingsSchema: Schema = new Schema(
     logoUrl: { type: String, default: '' },
     enableTax: { type: Boolean, default: false },
     defaultTaxRate: { type: String, default: '18' },
+    defaultPrintFormat: { type: String, default: 'a4-portrait' },
     bankName: { type: String, default: '', trim: true },
     bankAccountNo: { type: String, default: '', trim: true },
     bankIfsc: { type: String, default: '', trim: true },

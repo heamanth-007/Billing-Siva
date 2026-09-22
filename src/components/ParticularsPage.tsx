@@ -778,7 +778,7 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
 
                 {totalCases > 0 && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.6 }}>
-                    <Typography sx={{ fontSize: '12px', color: '#92400E', fontWeight: 600 }}>Total Qty / Cases:</Typography>
+                    <Typography sx={{ fontSize: '12px', color: '#92400E', fontWeight: 600 }}>Total Pieces:</Typography>
                     <Typography sx={{ fontSize: '12.5px', color: '#92400E', fontWeight: 700 }}>
                       {totalCases}
                     </Typography>
