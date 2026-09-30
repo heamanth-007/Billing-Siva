@@ -24,6 +24,7 @@ import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import {
   CustomersApi,
   CompaniesApi,
@@ -33,6 +34,7 @@ import {
 } from '../services/api';
 import { getStoredSettings } from './SettingsPage';
 import { BillPrintModal } from './BillPrintModal';
+import { WhatsAppShareModal } from './WhatsAppShareModal';
 import type { BillPrintData } from './BillPrintTemplate';
 
 interface ProductRowItem {
@@ -132,6 +134,10 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
   // Print Preview Modal State
   const [printModalOpen, setPrintModalOpen] = useState<boolean>(false);
   const [selectedBillForPrint, setSelectedBillForPrint] = useState<BillPrintData | null>(null);
+
+  // WhatsApp Share Modal State
+  const [whatsAppModalOpen, setWhatsAppModalOpen] = useState<boolean>(false);
+  const [selectedBillForWhatsApp, setSelectedBillForWhatsApp] = useState<BillPrintData | null>(null);
 
   // Auto-persist draft bill to localStorage
   useEffect(() => {
@@ -383,7 +389,7 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
   }, [subtotal, discountAmount, packingAmount, taxAmount]);
 
   // Save Bill to DB
-  const handleSaveBill = async (andPrint: boolean = false) => {
+  const handleSaveBill = async (action: 'save' | 'print' | 'whatsapp' = 'save') => {
     if (!customerName.trim()) {
       alert('Please select or enter Customer Name');
       return;
@@ -421,25 +427,29 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
 
       await ParticularsApi.create(payload);
 
-      if (andPrint) {
-        const printData: BillPrintData = {
-          billNo: payload.billNo,
-          date: payload.date,
-          customerName: payload.customerName,
-          customerPhone: payload.customerPhone,
-          customerAddress: payload.customerAddress,
-          companyName: payload.companyName,
-          transport: payload.transport,
-          caseCount: payload.caseCount,
-          discount: payload.discount,
-          packing: payload.packing,
-          tax: payload.tax,
-          amount: payload.amount,
-          total: payload.total,
-          products: payload.products,
-        };
-        setSelectedBillForPrint(printData);
+      const billData: BillPrintData = {
+        billNo: payload.billNo,
+        date: payload.date,
+        customerName: payload.customerName,
+        customerPhone: payload.customerPhone,
+        customerAddress: payload.customerAddress,
+        companyName: payload.companyName,
+        transport: payload.transport,
+        caseCount: payload.caseCount,
+        discount: payload.discount,
+        packing: payload.packing,
+        tax: payload.tax,
+        amount: payload.amount,
+        total: payload.total,
+        products: payload.products,
+      };
+
+      if (action === 'print') {
+        setSelectedBillForPrint(billData);
         setPrintModalOpen(true);
+      } else if (action === 'whatsapp') {
+        setSelectedBillForWhatsApp(billData);
+        setWhatsAppModalOpen(true);
       }
 
       // Reset Bill Form & Reload Recent Bills
@@ -457,7 +467,7 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
       refreshDate();
       loadOptions();
 
-      if (!andPrint) {
+      if (action === 'save') {
         alert(`Bill #${payload.billNo} saved successfully!`);
       }
     } catch (err: any) {
@@ -797,20 +807,20 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                 </Box>
               </Box>
 
-              {/* Save & Print Action Buttons */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
-                <Box sx={{ display: 'flex', gap: 1.5 }}>
+              {/* Save, Print & WhatsApp Action Buttons */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, mt: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1.2 }}>
                   <Button
                     fullWidth
                     variant="outlined"
-                    onClick={() => handleSaveBill(false)}
+                    onClick={() => handleSaveBill('save')}
                     disabled={savingBill || productRows.length === 0}
                     sx={{
                       borderColor: '#F59E0B',
                       color: '#92400E',
                       fontWeight: 700,
                       textTransform: 'none',
-                      py: 1,
+                      py: 0.9,
                       borderRadius: '8px',
                       '&:hover': { borderColor: '#B45309', backgroundColor: '#FFFBEB' },
                     }}
@@ -822,7 +832,7 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                     fullWidth
                     variant="contained"
                     disableElevation
-                    onClick={() => handleSaveBill(true)}
+                    onClick={() => handleSaveBill('print')}
                     disabled={savingBill || productRows.length === 0}
                     startIcon={savingBill ? <CircularProgress size={16} color="inherit" /> : <PrintOutlinedIcon />}
                     sx={{
@@ -830,7 +840,7 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                       color: '#FFFFFF',
                       fontWeight: 800,
                       textTransform: 'none',
-                      py: 1,
+                      py: 0.9,
                       borderRadius: '8px',
                       boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)',
                       '&:hover': { background: 'linear-gradient(135deg, #B91C1C 0%, #991B1B 100%)' },
@@ -839,6 +849,31 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
                     Save & Print
                   </Button>
                 </Box>
+
+                <Button
+                  fullWidth
+                  variant="contained"
+                  disableElevation
+                  onClick={() => handleSaveBill('whatsapp')}
+                  disabled={savingBill || productRows.length === 0}
+                  startIcon={<WhatsAppIcon sx={{ fontSize: 20 }} />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #128C7E 0%, #25D366 100%)',
+                    color: '#FFFFFF',
+                    fontWeight: 800,
+                    fontSize: '13.5px',
+                    textTransform: 'none',
+                    py: 1,
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(37, 211, 102, 0.3)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #075E54 0%, #128C7E 100%)',
+                      boxShadow: '0 4px 12px rgba(37, 211, 102, 0.4)',
+                    },
+                  }}
+                >
+                  Save & Share on WhatsApp
+                </Button>
 
                 {(productRows.length > 0 || customerName.trim() !== '') && (
                   <Button
@@ -1134,6 +1169,18 @@ export const ParticularsPage: FC<ParticularsPageProps> = ({ initialCustomerName 
             setSelectedBillForPrint(null);
           }}
           bill={selectedBillForPrint}
+        />
+      )}
+
+      {/* WhatsApp Share Modal */}
+      {whatsAppModalOpen && selectedBillForWhatsApp && (
+        <WhatsAppShareModal
+          open={whatsAppModalOpen}
+          onClose={() => {
+            setWhatsAppModalOpen(false);
+            setSelectedBillForWhatsApp(null);
+          }}
+          bill={selectedBillForWhatsApp}
         />
       )}
     </Box>

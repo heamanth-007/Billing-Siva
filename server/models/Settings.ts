@@ -22,6 +22,10 @@ export interface ISettings extends Document {
   bankBranch?: string;
   upiId?: string;
   defaultPrintFormat?: string;
+  whatsappGatewayEnabled?: boolean;
+  whatsappGatewayProvider?: string;
+  whatsappInstanceId?: string;
+  whatsappApiToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,6 +53,10 @@ const SettingsSchema: Schema = new Schema(
     bankIfsc: { type: String, default: '', trim: true },
     bankBranch: { type: String, default: '', trim: true },
     upiId: { type: String, default: '', trim: true },
+    whatsappGatewayEnabled: { type: Boolean, default: false },
+    whatsappGatewayProvider: { type: String, default: 'ultramsg', trim: true },
+    whatsappInstanceId: { type: String, default: '', trim: true },
+    whatsappApiToken: { type: String, default: '', trim: true },
   },
   { timestamps: true }
 );

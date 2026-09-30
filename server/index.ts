@@ -19,6 +19,7 @@ import particularRoutes from './routes/particularRoutes';
 import accountRoutes from './routes/accountRoutes';
 import authRoutes from './routes/authRoutes';
 import settingsRoutes from './routes/settingsRoutes';
+import whatsappRoutes from './routes/whatsappRoutes';
 import { seedDefaultAdmin } from './controllers/authController';
 
 const app: Application = express();
@@ -114,6 +115,7 @@ app.use('/api/pricelists', priceListRoutes);
 app.use('/api/particulars', particularRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

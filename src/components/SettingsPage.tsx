@@ -22,8 +22,10 @@ import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
 import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import CircularProgress from '@mui/material/CircularProgress';
-import { SettingsApi } from '../services/api';
+import { SettingsApi, WhatsAppApi } from '../services/api';
 
 export interface CompanySettings {
   companyName: string;
@@ -47,6 +49,10 @@ export interface CompanySettings {
   bankBranch?: string;
   upiId?: string;
   defaultPrintFormat?: string;
+  whatsappGatewayEnabled?: boolean;
+  whatsappGatewayProvider?: string;
+  whatsappInstanceId?: string;
+  whatsappApiToken?: string;
 }
 
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
@@ -71,6 +77,10 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   bankIfsc: '',
   bankBranch: '',
   upiId: '',
+  whatsappGatewayEnabled: false,
+  whatsappGatewayProvider: 'ultramsg',
+  whatsappInstanceId: '',
+  whatsappApiToken: '',
 };
 
 export const removeWhiteBackgroundFromDataUrl = (
@@ -201,6 +211,10 @@ export const SettingsPage: React.FC = () => {
             bankBranch: data.bankBranch ?? DEFAULT_COMPANY_SETTINGS.bankBranch,
             upiId: data.upiId ?? DEFAULT_COMPANY_SETTINGS.upiId,
             defaultPrintFormat: data.defaultPrintFormat ?? DEFAULT_COMPANY_SETTINGS.defaultPrintFormat ?? 'a4-portrait',
+            whatsappGatewayEnabled: Boolean(data.whatsappGatewayEnabled),
+            whatsappGatewayProvider: data.whatsappGatewayProvider || 'ultramsg',
+            whatsappInstanceId: data.whatsappInstanceId ?? '',
+            whatsappApiToken: data.whatsappApiToken ?? '',
           };
           setSettings(remoteSettings);
           localStorage.setItem('dheeksha_app_settings', JSON.stringify(remoteSettings));
@@ -212,6 +226,30 @@ export const SettingsPage: React.FC = () => {
     };
     loadSettings();
   }, []);
+
+  const [testingWhatsApp, setTestingWhatsApp] = useState(false);
+  const [testPhone, setTestPhone] = useState('');
+
+  const handleTestWhatsAppGateway = async () => {
+    if (!settings.whatsappInstanceId || !settings.whatsappApiToken) {
+      setToast({ open: true, message: 'Please enter both Instance ID and API Token', severity: 'error' });
+      return;
+    }
+    try {
+      setTestingWhatsApp(true);
+      const res = await WhatsAppApi.testGateway({
+        provider: settings.whatsappGatewayProvider || 'ultramsg',
+        instanceId: settings.whatsappInstanceId,
+        apiToken: settings.whatsappApiToken,
+        testPhone: testPhone || settings.whatsapp || settings.phone,
+      });
+      setToast({ open: true, message: res.message || 'WhatsApp Gateway connection test passed!', severity: 'success' });
+    } catch (err: any) {
+      setToast({ open: true, message: err.message || 'WhatsApp connection test failed', severity: 'error' });
+    } finally {
+      setTestingWhatsApp(false);
+    }
+  };
 
   const handleChange = <K extends keyof CompanySettings>(field: K, value: CompanySettings[K]) => {
     setSettings((prev) => ({
@@ -1191,6 +1229,143 @@ export const SettingsPage: React.FC = () => {
                   );
                 })}
               </Grid>
+            </Paper>
+
+            {/* Section 7: WhatsApp Automated Cloud Gateway */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: '12px',
+                border: '1.5px solid #25D366',
+                backgroundColor: '#FFFFFF',
+                boxShadow: '0 4px 14px rgba(37, 211, 102, 0.08)',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '8px',
+                      backgroundColor: '#25D366',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <WhatsAppIcon sx={{ fontSize: 20 }} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#128C7E' }}>
+                      Automated WhatsApp Cloud Gateway (Direct PDF Auto-Send)
+                    </Typography>
+                    <Typography sx={{ fontSize: '12px', color: '#64748B' }}>
+                      Sends the official PDF Invoice document directly into the customer's WhatsApp chat automatically!
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography sx={{ fontSize: '13px', fontWeight: 700, color: settings.whatsappGatewayEnabled ? '#128C7E' : '#64748B' }}>
+                    {settings.whatsappGatewayEnabled ? 'Enabled' : 'Disabled'}
+                  </Typography>
+                  <Switch
+                    checked={Boolean(settings.whatsappGatewayEnabled)}
+                    onChange={(e) => handleChange('whatsappGatewayEnabled', e.target.checked)}
+                    color="success"
+                  />
+                </Box>
+              </Box>
+
+              {settings.whatsappGatewayEnabled && (
+                <Box sx={{ mt: 2, pt: 2, borderTop: '1px dashed #BBF7D0' }}>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="WhatsApp Instance ID"
+                        value={settings.whatsappInstanceId || ''}
+                        onChange={(e) => handleChange('whatsappInstanceId', e.target.value)}
+                        placeholder="e.g. instance105234 (from UltraMsg / GreenAPI)"
+                        helperText="Your WhatsApp Gateway Instance ID"
+                      />
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="password"
+                        label="API Token / Secret Key"
+                        value={settings.whatsappApiToken || ''}
+                        onChange={(e) => handleChange('whatsappApiToken', e.target.value)}
+                        placeholder="e.g. a1b2c3d4e5f6..."
+                        helperText="Your WhatsApp Gateway API Token"
+                      />
+                    </Grid>
+
+                    <Grid size={{ xs: 12 }}>
+                      <Box
+                        sx={{
+                          p: 1.8,
+                          borderRadius: '8px',
+                          backgroundColor: '#F0FDF4',
+                          border: '1px solid #BBF7D0',
+                          display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          alignItems: { xs: 'flex-start', sm: 'center' },
+                          justifyContent: 'space-between',
+                          gap: 1.5,
+                        }}
+                      >
+                        <Box sx={{ flex: 1 }}>
+                          <Typography sx={{ fontSize: '12.5px', fontWeight: 700, color: '#166534' }}>
+                            Test WhatsApp Gateway Connection
+                          </Typography>
+                          <Typography sx={{ fontSize: '11.5px', color: '#15803D', mt: 0.2 }}>
+                            Enter a mobile number to test sending a verification message through your WhatsApp Gateway.
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
+                          <TextField
+                            size="small"
+                            placeholder="Test Mobile (e.g. 9876543210)"
+                            value={testPhone}
+                            onChange={(e) => setTestPhone(e.target.value)}
+                            sx={{ width: { xs: '100%', sm: '190px' }, backgroundColor: '#FFFFFF' }}
+                          />
+                          <Button
+                            variant="contained"
+                            disableElevation
+                            onClick={handleTestWhatsAppGateway}
+                            disabled={testingWhatsApp || !settings.whatsappInstanceId || !settings.whatsappApiToken}
+                            startIcon={
+                              testingWhatsApp ? <CircularProgress size={14} color="inherit" /> : <SendRoundedIcon sx={{ fontSize: 16 }} />
+                            }
+                            sx={{
+                              background: 'linear-gradient(135deg, #128C7E 0%, #25D366 100%)',
+                              color: '#FFFFFF',
+                              fontWeight: 700,
+                              fontSize: '12px',
+                              textTransform: 'none',
+                              whiteSpace: 'nowrap',
+                              px: 2,
+                              py: 0.8,
+                            }}
+                          >
+                            {testingWhatsApp ? 'Testing...' : 'Send Test'}
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              )}
             </Paper>
           </Box>
         </Box>

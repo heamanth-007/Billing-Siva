@@ -183,6 +183,32 @@ export const SettingsApi = {
     }),
 };
 
+// WhatsApp Automated Gateway API
+export const WhatsAppApi = {
+  sendBillPdf: (data: {
+    customerPhone: string;
+    pdfData?: string;
+    pdfName?: string;
+    billNo?: string;
+    customerName?: string;
+    total?: string;
+  }) =>
+    request<{ success: boolean; method: string; message: string; data?: any }>('/whatsapp/send-bill-pdf', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  testGateway: (data: {
+    provider: string;
+    instanceId: string;
+    apiToken: string;
+    testPhone?: string;
+  }) =>
+    request<{ success: boolean; message: string; data?: any }>('/whatsapp/test-gateway', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};
+
 // Health Check API
 export const HealthApi = {
   check: () => request<{ status: string; message: string; timestamp: string }>('/health'),

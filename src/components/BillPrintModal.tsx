@@ -17,9 +17,11 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import CropLandscapeRoundedIcon from '@mui/icons-material/CropLandscapeRounded';
 import FilterFramesRoundedIcon from '@mui/icons-material/FilterFramesRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { BillPrintTemplate, type BillPrintData, type BillPrintFormat } from './BillPrintTemplate';
 import { printBillDirectly } from '../utils/printUtils';
 import { getStoredSettings } from './SettingsPage';
+import { WhatsAppShareModal } from './WhatsAppShareModal';
 
 interface BillPrintModalProps {
   open: boolean;
@@ -28,6 +30,7 @@ interface BillPrintModalProps {
 }
 
 export const BillPrintModal: React.FC<BillPrintModalProps> = ({ open, onClose, bill }) => {
+  const [openWhatsAppModal, setOpenWhatsAppModal] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<BillPrintFormat>(() => {
     const saved = getStoredSettings();
     if (saved.defaultPrintFormat && ['a4-portrait', 'a4-landscape', 'a4-dual', 'thermal'].includes(saved.defaultPrintFormat)) {
@@ -162,6 +165,29 @@ export const BillPrintModal: React.FC<BillPrintModalProps> = ({ open, onClose, b
             <Button
               variant="contained"
               disableElevation
+              onClick={() => setOpenWhatsAppModal(true)}
+              startIcon={<WhatsAppIcon sx={{ fontSize: '18px !important', color: '#FFFFFF' }} />}
+              sx={{
+                background: 'linear-gradient(135deg, #128C7E 0%, #25D366 100%)',
+                color: '#FFFFFF',
+                fontSize: '13px',
+                fontWeight: 800,
+                textTransform: 'none',
+                px: 2,
+                py: 0.6,
+                borderRadius: '8px',
+                boxShadow: '0 2px 6px rgba(37, 211, 102, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #075E54 0%, #128C7E 100%)',
+                },
+              }}
+            >
+              WhatsApp
+            </Button>
+
+            <Button
+              variant="contained"
+              disableElevation
               onClick={handleTriggerPrint}
               startIcon={<PrintOutlinedIcon sx={{ fontSize: '18px !important', color: '#7C2D12' }} />}
               sx={{
@@ -234,7 +260,7 @@ export const BillPrintModal: React.FC<BillPrintModalProps> = ({ open, onClose, b
             Active Format: <b>{selectedFormat === 'a4-portrait' ? '📄 A4 Portrait (Full Page)' : selectedFormat === 'a4-landscape' ? '🖼️ A4 Landscape (Wide)' : selectedFormat === 'a4-dual' ? '📑 A4 2-in-1 Dual Copy (Customer + Office)' : '🧾 80mm Thermal POS Slip'}</b>
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
             <Button
               onClick={onClose}
               sx={{
@@ -246,6 +272,28 @@ export const BillPrintModal: React.FC<BillPrintModalProps> = ({ open, onClose, b
               }}
             >
               Close
+            </Button>
+
+            <Button
+              variant="outlined"
+              onClick={() => setOpenWhatsAppModal(true)}
+              startIcon={<WhatsAppIcon sx={{ fontSize: 18 }} />}
+              sx={{
+                borderColor: '#25D366',
+                color: '#128C7E',
+                fontSize: '13px',
+                fontWeight: 700,
+                textTransform: 'none',
+                px: 2.2,
+                py: 0.8,
+                borderRadius: '8px',
+                '&:hover': {
+                  borderColor: '#128C7E',
+                  backgroundColor: '#ECFDF5',
+                },
+              }}
+            >
+              Share on WhatsApp
             </Button>
 
             <Button
@@ -273,6 +321,15 @@ export const BillPrintModal: React.FC<BillPrintModalProps> = ({ open, onClose, b
           </Box>
         </DialogActions>
       </Dialog>
+
+      {/* WhatsApp Share Modal */}
+      {openWhatsAppModal && (
+        <WhatsAppShareModal
+          open={openWhatsAppModal}
+          onClose={() => setOpenWhatsAppModal(false)}
+          bill={bill}
+        />
+      )}
     </>
   );
 };

@@ -34,11 +34,13 @@ import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { CustomersApi, ParticularsApi } from '../services/api';
 import { printCustomerListDirectly } from '../utils/printUtils';
 import { DateRangePrintModal } from './DateRangePrintModal';
 import { BillPrintModal } from './BillPrintModal';
 import { EditBillModal } from './EditBillModal';
+import { WhatsAppShareModal } from './WhatsAppShareModal';
 import type { BillPrintData } from './BillPrintTemplate';
 import { getStoredSettings } from './SettingsPage';
 
@@ -90,6 +92,10 @@ export const AllCustomersPage: FC<AllCustomersPageProps> = ({
   const [customerFilter, setCustomerFilter] = useState<string>('ALL');
   const [printModalOpen, setPrintModalOpen] = useState<boolean>(false);
   const [selectedBillForPrint, setSelectedBillForPrint] = useState<BillPrintData | null>(null);
+
+  // WhatsApp Share Modal State
+  const [whatsAppModalOpen, setWhatsAppModalOpen] = useState<boolean>(false);
+  const [selectedBillForWhatsApp, setSelectedBillForWhatsApp] = useState<BillPrintData | null>(null);
 
   // Active View Tab State: 'customers' | 'bills'
   const [activeTab, setActiveTab] = useState<'customers' | 'bills'>('customers');
@@ -236,6 +242,37 @@ export const AllCustomersPage: FC<AllCustomersPageProps> = ({
     };
     setSelectedBillForPrint(printData);
     setPrintModalOpen(true);
+  };
+
+  // Open WhatsApp Share for Recent / Customer Bill
+  const handleShareWhatsAppBill = (bill: any) => {
+    const printData: BillPrintData = {
+      billNo: bill.billNo || '',
+      date: bill.date || '',
+      customerName: bill.customerName || '',
+      customerPhone: bill.customerPhone || '',
+      customerAddress: bill.customerAddress || '',
+      companyName:
+        bill.companyName && bill.companyName.trim() !== '' && bill.companyName !== 'General'
+          ? bill.companyName
+          : storeSettings.companyName || 'General',
+      transport: String(bill.transport || '0'),
+      caseCount: String(bill.caseCount || '0'),
+      discount: String(bill.discount || '0'),
+      packing: String(bill.packing || '0'),
+      tax: String(bill.tax || '0'),
+      amount: String(bill.amount || bill.total || '0'),
+      total: String(bill.total || '0'),
+      products: (bill.products || []).map((p: any) => ({
+        particular: p.particular || p.name || '',
+        quantity: p.quantity || '0',
+        rate: p.rate || '0',
+        pktUnit: p.pktUnit || 'Box',
+        amount: p.amount || '0',
+      })),
+    };
+    setSelectedBillForWhatsApp(printData);
+    setWhatsAppModalOpen(true);
   };
 
   // Open Edit for Recent / Customer Bill
@@ -1353,7 +1390,26 @@ export const AllCustomersPage: FC<AllCustomersPageProps> = ({
                               borderBottom: isLast ? 'none' : '1px solid #F7EEDB',
                             }}
                           >
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.9 }}>
+                              {/* WhatsApp Share */}
+                              <Tooltip title="Share Bill via WhatsApp" arrow>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleShareWhatsAppBill(bill)}
+                                  sx={{
+                                    color: '#16A34A',
+                                    backgroundColor: '#ECFDF5',
+                                    border: '1px solid #A7F3D0',
+                                    borderRadius: '6px',
+                                    p: 0.7,
+                                    transition: 'all 0.15s ease',
+                                    '&:hover': { color: '#FFFFFF', backgroundColor: '#16A34A', borderColor: '#16A34A' },
+                                  }}
+                                >
+                                  <WhatsAppIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Tooltip>
+
                               {/* Print */}
                               <Tooltip title="Print / View Bill Invoice" arrow>
                                 <IconButton
@@ -1731,6 +1787,24 @@ export const AllCustomersPage: FC<AllCustomersPageProps> = ({
                               </TableCell>
                               <TableCell align="center">
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.8 }}>
+                                  {/* WhatsApp Share */}
+                                  <Tooltip title="Share Bill via WhatsApp" arrow>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleShareWhatsAppBill(bill)}
+                                      sx={{
+                                        color: '#16A34A',
+                                        backgroundColor: '#ECFDF5',
+                                        border: '1px solid #A7F3D0',
+                                        borderRadius: '6px',
+                                        p: 0.5,
+                                        '&:hover': { color: '#FFFFFF', backgroundColor: '#16A34A' },
+                                      }}
+                                    >
+                                      <WhatsAppIcon sx={{ fontSize: 15 }} />
+                                    </IconButton>
+                                  </Tooltip>
+
                                   {/* Print Bill */}
                                   <Tooltip title="Print Bill" arrow>
                                     <IconButton
@@ -1836,6 +1910,18 @@ export const AllCustomersPage: FC<AllCustomersPageProps> = ({
             setSelectedBillForPrint(null);
           }}
           bill={selectedBillForPrint}
+        />
+      )}
+
+      {/* WhatsApp Share Modal */}
+      {whatsAppModalOpen && selectedBillForWhatsApp && (
+        <WhatsAppShareModal
+          open={whatsAppModalOpen}
+          onClose={() => {
+            setWhatsAppModalOpen(false);
+            setSelectedBillForWhatsApp(null);
+          }}
+          bill={selectedBillForWhatsApp}
         />
       )}
     </Box>
